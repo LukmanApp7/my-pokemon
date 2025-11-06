@@ -8,14 +8,135 @@
 import SwiftUI
 
 struct LoginView: View {
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var isLoading = false
+    @State private var showPassword = false
+    @State private var loginError: String?
+    @State private var isLoggedIn = false
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        ZStack {
+            // Background gradient
+            LinearGradient(colors: [.blue.opacity(0.7), .purple.opacity(0.7)],
+                           startPoint: .topLeading,
+                           endPoint: .bottomTrailing)
+            .ignoresSafeArea()
+            
+            VStack(spacing: 24) {
+                Spacer()
+                
+                // Logo
+                Image(systemName: "lock.shield")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(.white.opacity(0.9))
+                    .padding(.bottom, 20)
+                
+                // Title
+                Text("My Pokemon")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
+                
+                // Form Fields
+                VStack(spacing: 16) {
+                    TextField("Email", text: $email)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .padding()
+                        .background(Color.white.opacity(0.15))
+                        .cornerRadius(10)
+                        .foregroundColor(.white)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.3)))
+                    
+                    HStack {
+                        if showPassword {
+                            TextField("Password", text: $password)
+                                .autocapitalization(.none)
+                                .foregroundColor(.white)
+                        } else {
+                            SecureField("Password", text: $password)
+                                .foregroundColor(.white)
+                        }
+                        
+                        Button(action: {
+                            showPassword.toggle()
+                        }) {
+                            Image(systemName: showPassword ? "eye.slash" : "eye")
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                    }
+                    .padding()
+                    .background(Color.white.opacity(0.15))
+                    .cornerRadius(10)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.3)))
+                }
+                .padding(.horizontal, 32)
+                
+                // Error Message
+                if let error = loginError {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.system(size: 14))
+                        .padding(.top, -8)
+                }
+                
+                // Login Button
+                Button(action: login) {
+                    HStack {
+                        if isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Text("Login")
+                                .fontWeight(.semibold)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.white.opacity(0.2))
+                    .cornerRadius(10)
+                    .foregroundColor(.white)
+                }
+                .disabled(isLoading)
+                .padding(.horizontal, 32)
+                .padding(.top, 10)
+                
+                Spacer()
+                
+                // Footer
+                Text("© 2025 Daarul Lathiif Labs")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.6))
+                    .padding(.bottom)
+            }
         }
-        .padding()
+    }
+
+    func login() {
+        loginError = nil
+        
+        guard !email.isEmpty, !password.isEmpty else {
+            loginError = "Please enter both email and password."
+            return
+        }
+        
+        isLoading = true
+        
+        // Simulate network delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            isLoading = false
+            
+            if email.lowercased() == "test" && password == "123456" {
+                print("✅ Login success")
+                withAnimation {
+                    isLoggedIn = true
+                }
+            } else {
+                loginError = "Invalid email or password."
+            }
+        }
     }
 }
 
