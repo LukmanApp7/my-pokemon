@@ -16,16 +16,34 @@ struct LoginView: View {
     @State private var isLoggedIn = false
 
     var body: some View {
+        Group {
+            if #available(iOS 16.0, *) {
+                // iOS 16 ke atas
+                NavigationStack {
+                    loginContent
+                }
+            } else {
+                // iOS 14–15 fallback
+                NavigationView {
+                    loginContent
+                        .navigationBarHidden(true) // hide default bar
+                }
+                .navigationViewStyle(StackNavigationViewStyle()) // untuk iPad fix
+            }
+        }
+    }
+
+    private var loginContent: some View {
         ZStack {
             // Background gradient
-            LinearGradient(colors: [.blue.opacity(0.7), .purple.opacity(0.7)],
+            LinearGradient(colors: [.green.opacity(0.7), .blue.opacity(0.7)],
                            startPoint: .topLeading,
                            endPoint: .bottomTrailing)
-            .ignoresSafeArea()
-            
+                .ignoresSafeArea()
+
             VStack(spacing: 24) {
                 Spacer()
-                
+
                 // Logo
                 Image(systemName: "lock.shield")
                     .resizable()
@@ -33,12 +51,12 @@ struct LoginView: View {
                     .frame(width: 80, height: 80)
                     .foregroundColor(.white.opacity(0.9))
                     .padding(.bottom, 20)
-                
+
                 // Title
                 Text("My Pokemon")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
-                
+
                 // Form Fields
                 VStack(spacing: 16) {
                     TextField("Email", text: $email)
@@ -48,8 +66,9 @@ struct LoginView: View {
                         .background(Color.white.opacity(0.15))
                         .cornerRadius(10)
                         .foregroundColor(.white)
-                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.3)))
-                    
+                        .overlay(RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.white.opacity(0.3)))
+
                     HStack {
                         if showPassword {
                             TextField("Password", text: $password)
@@ -59,7 +78,7 @@ struct LoginView: View {
                             SecureField("Password", text: $password)
                                 .foregroundColor(.white)
                         }
-                        
+
                         Button(action: {
                             showPassword.toggle()
                         }) {
@@ -70,10 +89,11 @@ struct LoginView: View {
                     .padding()
                     .background(Color.white.opacity(0.15))
                     .cornerRadius(10)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.3)))
+                    .overlay(RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.white.opacity(0.3)))
                 }
                 .padding(.horizontal, 32)
-                
+
                 // Error Message
                 if let error = loginError {
                     Text(error)
@@ -81,7 +101,7 @@ struct LoginView: View {
                         .font(.system(size: 14))
                         .padding(.top, -8)
                 }
-                
+
                 // Login Button
                 Button(action: login) {
                     HStack {
@@ -102,15 +122,21 @@ struct LoginView: View {
                 .disabled(isLoading)
                 .padding(.horizontal, 32)
                 .padding(.top, 10)
-                
+
                 Spacer()
-                
+
                 // Footer
                 Text("© 2025 Daarul Lathiif Labs")
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.6))
                     .padding(.bottom)
             }
+
+            // Navigation ke halaman berikut
+            NavigationLink(destination: LandingView(), isActive: $isLoggedIn) {
+                EmptyView()
+            }
+            .hidden()
         }
     }
 
