@@ -21,6 +21,7 @@
 		FACD2A1A2EBDD3CB00A8E323 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD2A172EBDD3CB00A8E323 /* ProfileView.swift */; };
 		FACD2A1C2EBDD5C900A8E323 /* PagerTabStripRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD2A1B2EBDD5C900A8E323 /* PagerTabStripRepresentable.swift */; };
 		FACD2A1E2EBDDB0800A8E323 /* HostingPagerItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD2A1D2EBDDB0700A8E323 /* HostingPagerItem.swift */; };
+		FAD48F742EBFC2B900081DB9 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD48F732EBFC2B900081DB9 /* DetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 		FACD2A172EBDD3CB00A8E323 /* ProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		FACD2A1B2EBDD5C900A8E323 /* PagerTabStripRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagerTabStripRepresentable.swift; sourceTree = "<group>"; };
 		FACD2A1D2EBDDB0700A8E323 /* HostingPagerItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingPagerItem.swift; sourceTree = "<group>"; };
+		FAD48F732EBFC2B900081DB9 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		FED5939A10C50DE6B1704EC5 /* Pods-mypokemon.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mypokemon.debug.xcconfig"; path = "Target Support Files/Pods-mypokemon/Pods-mypokemon.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -131,6 +133,7 @@
 			isa = PBXGroup;
 			children = (
 				FACD2A152EBDD3CB00A8E323 /* HomeView.swift */,
+				FAD48F732EBFC2B900081DB9 /* DetailView.swift */,
 				FACD2A162EBDD3CB00A8E323 /* LandingView.swift */,
 				FACD2A172EBDD3CB00A8E323 /* ProfileView.swift */,
 				FA1B2AFB2EBC957800855BCB /* mypokemonApp.swift */,
@@ -344,6 +347,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA1B2AFE2EBC957800855BCB /* LoginView.swift in Sources */,
+				FAD48F742EBFC2B900081DB9 /* DetailView.swift in Sources */,
 				FACD2A192EBDD3CB00A8E323 /* LandingView.swift in Sources */,
 				FACD2A1C2EBDD5C900A8E323 /* PagerTabStripRepresentable.swift in Sources */,
 				FACD2A1E2EBDDB0800A8E323 /* HostingPagerItem.swift in Sources */,

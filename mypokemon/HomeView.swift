@@ -11,7 +11,7 @@ import MBProgressHUD
 
 // MARK: - Model
 struct Pokemon: Identifiable, Decodable {
-    let id = UUID()            // untuk SwiftUI List
+    var id: String { name }            // untuk SwiftUI List
     let name: String
     let url: String
 }
@@ -29,7 +29,9 @@ class PokemonViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var refresh: String?
 
-    func fetchPokemons() {
+    func fetchPokemons(forceRefresh: Bool = false) {
+        guard pokemons.isEmpty || forceRefresh else { return }
+        
         DispatchQueue.main.async {
             self.isLoading = true
             self.errorMessage = nil
@@ -92,6 +94,26 @@ struct HUDWrapper: UIViewControllerRepresentable {
     }
 }
 
+// MARK: - Reusable Modifier: onFirstAppear
+extension View {
+    func onFirstAppear(perform action: @escaping () -> Void) -> some View {
+        modifier(FirstAppearModifier(action: action))
+    }
+}
+
+struct FirstAppearModifier: ViewModifier {
+    let action: () -> Void
+    @State private var didAppear = false
+
+    func body(content: Content) -> some View {
+        content.onAppear {
+            guard !didAppear else { return }
+            didAppear = true
+            action()
+        }
+    }
+}
+
 // MARK: - SwiftUI View
 struct HomeView: View {
     @StateObject private var viewModel = PokemonViewModel()
@@ -100,26 +122,41 @@ struct HomeView: View {
     var body: some View {
         ZStack {
             NavigationView {
-                List(viewModel.pokemons) { pokemon in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(pokemon.name.capitalized)
-                            .font(.headline)
+                if let error = viewModel.errorMessage {
+                    VStack(spacing: 10) {
+                        Text("Failed to load data")
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                        Button("Retry") {
+                            viewModel.fetchPokemons()
+                        }
+                        .padding(.top, 8)
                     }
-                    .padding(.vertical, 6)
-                }
-                .listStyle(PlainListStyle())
-                .navigationTitle("Pokémon List")
-                .onAppear {
-                    viewModel.fetchPokemons()
-                }
-                .refreshable {
-                    viewModel.fetchPokemons()
+                } else {
+                    List(viewModel.pokemons) { pokemon in
+                        NavigationLink(destination: DetailView(name: pokemon.name)) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(pokemon.name.capitalized)
+                                    .font(.headline)
+                            }
+                            .padding(.vertical, 6)
+                        }
+                    }
+                    .listStyle(PlainListStyle())
+                    .navigationTitle("Pokémon List")
+                    .refreshable {
+                        viewModel.fetchPokemons(forceRefresh: true)
+                    }
                 }
             }
 
             // Overlay HUD
             HUDWrapper(isVisible: $viewModel.isLoading, text: "Loading...")
                 .allowsHitTesting(false)
+        }
+        .onFirstAppear {
+            viewModel.fetchPokemons()
         }
     }
 }
