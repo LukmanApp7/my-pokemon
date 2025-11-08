@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Alamofire
+import MBProgressHUD
 
 // MARK: - Model
 struct Pokemon: Identifiable, Decodable {
@@ -29,8 +30,10 @@ class PokemonViewModel: ObservableObject {
     @Published var refresh: String?
 
     func fetchPokemons() {
-        isLoading = true
-        errorMessage = nil
+        DispatchQueue.main.async {
+            self.isLoading = true
+            self.errorMessage = nil
+        }
 
         let url = refresh ?? "https://pokeapi.co/api/v2/pokemon?offset=0&limit=10"
 
@@ -52,46 +55,71 @@ class PokemonViewModel: ObservableObject {
     }
 }
 
+// MARK: - MBProgressHUD Wrapper for SwiftUI
+struct HUDWrapper: UIViewControllerRepresentable {
+    @Binding var isVisible: Bool
+    let text: String?
+    
+    class Coordinator {
+        var hud: MBProgressHUD?
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        let controller = UIViewController()
+        controller.view.backgroundColor = .clear
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        if isVisible {
+            if context.coordinator.hud == nil {
+                let hud = MBProgressHUD.showAdded(to: uiViewController.view, animated: true)
+                hud.label.text = text ?? "Loading..."
+                hud.backgroundView.style = .solidColor
+                hud.backgroundView.color = UIColor.black.withAlphaComponent(0.3)
+                context.coordinator.hud = hud
+            }
+        } else {
+            if let hud = context.coordinator.hud {
+                hud.hide(animated: true)
+                context.coordinator.hud = nil
+            }
+        }
+    }
+}
+
+// MARK: - SwiftUI View
 struct HomeView: View {
     @StateObject private var viewModel = PokemonViewModel()
-    
+    @State private var isRefreshing = false
+
     var body: some View {
-        NavigationView {
-            ZStack {
-                if viewModel.isLoading {
-                    ProgressView("Loading...")
-                } else if let error = viewModel.errorMessage {
-                    VStack(spacing: 10) {
-                        Text("Failed to load data")
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                        Button("Retry") {
-                            viewModel.fetchPokemons()
-                        }
-                        .padding(.top, 8)
+        ZStack {
+            NavigationView {
+                List(viewModel.pokemons) { pokemon in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(pokemon.name.capitalized)
+                            .font(.headline)
                     }
-                } else {
-                    List(viewModel.pokemons) { pokemon in
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(pokemon.name.capitalized)
-                                    .font(.headline)
-                            }
-                            Spacer()
-                        }
-                        .padding(.vertical, 4)
-                    }
-                    .listStyle(PlainListStyle())
-                    .navigationTitle("Pokémon List")
-                    .refreshable {
-                        viewModel.fetchPokemons()
-                    }
+                    .padding(.vertical, 6)
+                }
+                .listStyle(PlainListStyle())
+                .navigationTitle("Pokémon List")
+                .onAppear {
+                    viewModel.fetchPokemons()
+                }
+                .refreshable {
+                    viewModel.fetchPokemons()
                 }
             }
-            .onAppear {
-                viewModel.fetchPokemons()
-            }
+
+            // Overlay HUD
+            HUDWrapper(isVisible: $viewModel.isLoading, text: "Loading...")
+                .allowsHitTesting(false)
         }
     }
 }
