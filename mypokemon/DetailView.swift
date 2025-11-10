@@ -9,6 +9,7 @@ import SwiftUI
 import Alamofire
 import MBProgressHUD
 import Kingfisher
+import RxSwift
 
 // MARK: - Detail Model
 struct PokemonDetail: Decodable {
@@ -27,7 +28,76 @@ struct PokemonDetail: Decodable {
     let abilities: [AbilityEntry]
 }
 
+class DetailService {
+    static let shared = DetailService()
+    
+    func fetchDetail(for name: String) -> Single<PokemonDetail> {
+        let url = "https://pokeapi.co/api/v2/pokemon/\(name.lowercased())"
+        return Single.create { single in
+            let request = AF.request(url)
+                .validate()
+                .responseDecodable(of: PokemonDetail.self) { response in
+                    switch response.result {
+                    case .success(let result):
+                        single(.success(result))
+                    case .failure(let error):
+                        single(.failure(error))
+                    }
+                }
+            
+            return Disposables.create {
+                request.cancel()
+            }
+        }
+    }
+}
+
 // MARK: - ViewModel
+class PokemonDetailRxViewModel: ObservableObject {
+    private let disposeBag = DisposeBag()
+
+    // Output
+    @Published var detail: PokemonDetail?
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
+    // Trigger
+    let loadTrigger = PublishSubject<String>()
+    
+    init() {
+        bind()
+    }
+    
+    private func bind() {
+        loadTrigger
+            .do(onNext: { [weak self] _ in
+                self?.isLoading = true
+                self?.errorMessage = nil
+            })
+            .flatMapLatest { name in
+                DetailService.shared.fetchDetail(for: name)
+                    .asObservable()
+                    .catch { error in
+                        Observable<PokemonDetail>.empty().do(onSubscribe: {
+                            DispatchQueue.main.async {
+                                self.errorMessage = error.localizedDescription
+                            }
+                        })
+                    }
+            }
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] detail in
+                self?.detail = detail
+                self?.isLoading = false
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    func loadDetail(for name: String) {
+        loadTrigger.onNext(name)
+    }
+}
+
 class PokemonDetailViewModel: ObservableObject {
     @Published var detail: PokemonDetail?
     @Published var isLoading = false
@@ -59,7 +129,7 @@ class PokemonDetailViewModel: ObservableObject {
 
 struct DetailView: View {
     let name: String
-    @StateObject private var viewModel = PokemonDetailViewModel()
+    @StateObject private var viewModel = PokemonDetailRxViewModel()
 
     var body: some View {
         ZStack {
@@ -75,7 +145,7 @@ struct DetailView: View {
                                 }
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 150, height: 150)
+                                .frame(width: 200, height: 200)
                                 .cornerRadius(12)
                                 .shadow(radius: 5)
                         }
@@ -103,7 +173,7 @@ struct DetailView: View {
                         .font(.caption)
                         .foregroundColor(.red)
                     Button("Retry") {
-                        viewModel.fetchDetail(for: name)
+                        viewModel.loadDetail(for: name)
                     }
                 }
             } else {
@@ -114,9 +184,8 @@ struct DetailView: View {
             HUDWrapper(isVisible: $viewModel.isLoading, text: "Loading...")
                 .allowsHitTesting(false)
         }
-//        .navigationTitle(name.capitalized)
         .onAppear {
-            viewModel.fetchDetail(for: name)
+            viewModel.loadDetail(for: name)
         }
     }
 }
