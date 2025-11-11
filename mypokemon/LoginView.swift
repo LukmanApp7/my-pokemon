@@ -152,6 +152,7 @@ struct LoginView: View {
             }
             .hidden()
         }
+        .navigationBarHidden(true)
     }
 
     func login() {
@@ -168,18 +169,14 @@ struct LoginView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             isLoading = false
             
-//            if email.lowercased() == "test" && password == "123456" {
-//                print("✅ Login success")
-//                withAnimation {
-//                    isLoggedIn = true
-//                }
-//            } else {
-//                loginError = "Invalid email or password."
-//            }
-            
             if repo.login(email: email, password: password) {
                 loginError = nil
                 isLoggedIn = true
+                if let user = SQLiteManager.shared.fetchUser(email: email, password: password) {
+                    UserDefaults.standard.set(user.name, forKey: "currentUsername")
+                    UserDefaults.standard.set(user.email, forKey: "currentEmail")
+                    UserDefaults.standard.set(user.phone, forKey: "currentPhone")
+                }
             } else {
                 loginError = "Email atau password salah."
             }

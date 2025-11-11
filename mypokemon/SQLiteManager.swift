@@ -8,6 +8,13 @@
 import Foundation
 import SQLite3
 
+struct User {
+    let id: Int
+    let name: String
+    let email: String
+    let phone: String
+}
+
 class SQLiteManager {
     static let shared = SQLiteManager()
     private let dbName = "UserDatabase.sqlite"
@@ -57,23 +64,29 @@ class SQLiteManager {
         sqlite3_finalize(statement)
     }
     
-    // MARK: - Drop Table
-    private func dropTableIfNeeded() {
-        let createTableQuery = """
-        DROP TABLE users;
-        """
-        
-        var statement: OpaquePointer?
-        if sqlite3_prepare_v2(db, createTableQuery, -1, &statement, nil) == SQLITE_OK {
-            if sqlite3_step(statement) == SQLITE_DONE {
-                print("✅ Table deleted.")
-            } else {
-                print("❌ Could not delete table.")
-            }
-        } else {
-            print("❌ Delete table statement could not be prepared.")
+    func fetchUser(email: String, password: String) -> User? {
+        let query = "SELECT id, name, email, phone FROM users WHERE email = ? AND password = ? LIMIT 1;"
+        var stmt: OpaquePointer?
+
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) != SQLITE_OK {
+            return nil
         }
-        sqlite3_finalize(statement)
+
+        sqlite3_bind_text(stmt, 1, (email as NSString).utf8String, -1, nil)
+        sqlite3_bind_text(stmt, 2, (password as NSString).utf8String, -1, nil)
+
+        var user: User?
+
+        if sqlite3_step(stmt) == SQLITE_ROW {
+            let id = Int(sqlite3_column_int(stmt, 0))
+            let name = String(cString: sqlite3_column_text(stmt, 1))
+            let email = String(cString: sqlite3_column_text(stmt, 2))
+            let phone = String(cString: sqlite3_column_text(stmt, 3))
+            user = User(id: id, name: name, email: email, phone: phone)
+        }
+
+        sqlite3_finalize(stmt)
+        return user
     }
     
     // MARK: - Execute Statement
@@ -81,7 +94,6 @@ class SQLiteManager {
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK else {
             print("❌ Error preparing statement.")
-            dropTableIfNeeded()
             return false
         }
         

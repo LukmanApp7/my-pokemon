@@ -15,6 +15,9 @@ struct LandingView: View {
                 .edgesIgnoringSafeArea(.bottom) // supaya pager bar tidak terpotong
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .navigationBarBackButtonHidden(true)
+        .navigationBarHidden(true)
+        .interactiveDismissDisabled(true)
     }
 }
 

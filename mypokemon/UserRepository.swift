@@ -28,6 +28,13 @@ class UserRepository {
     func login(email: String, password: String) -> Bool {
         let query = "SELECT * FROM users WHERE email = ? AND password = ?"
         let result = db.query(query, parameters: [email, password])
+        if !result.isEmpty {
+            if let user = SQLiteManager.shared.fetchUser(email: email, password: password) {
+                UserDefaults.standard.set(user.name, forKey: "currentUsername")
+                UserDefaults.standard.set(user.email, forKey: "currentEmail")
+                return true
+            }
+        }
         return !result.isEmpty
     }
     
