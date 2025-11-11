@@ -14,6 +14,7 @@ struct LoginView: View {
     @State private var showPassword = false
     @State private var loginError: String?
     @State private var isLoggedIn = false
+    private let repo = UserRepository()
 
     var body: some View {
         Group {
@@ -123,6 +124,19 @@ struct LoginView: View {
                 .padding(.horizontal, 32)
                 .padding(.top, 10)
 
+                HStack {
+                    Text("Belum punya akun?")
+                        .font(.footnote)
+                        .foregroundColor(.white.opacity(0.9))
+                    NavigationLink(destination: RegistrationView()) {
+                        Text("Daftar di sini")
+                            .font(.footnote)
+                            .foregroundColor(.white.opacity(0.9))
+                            .underline()
+                    }
+                }
+                .padding(.top, 10)
+                
                 Spacer()
 
                 // Footer
@@ -154,13 +168,20 @@ struct LoginView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             isLoading = false
             
-            if email.lowercased() == "test" && password == "123456" {
-                print("✅ Login success")
-                withAnimation {
-                    isLoggedIn = true
-                }
+//            if email.lowercased() == "test" && password == "123456" {
+//                print("✅ Login success")
+//                withAnimation {
+//                    isLoggedIn = true
+//                }
+//            } else {
+//                loginError = "Invalid email or password."
+//            }
+            
+            if repo.login(email: email, password: password) {
+                loginError = nil
+                isLoggedIn = true
             } else {
-                loginError = "Invalid email or password."
+                loginError = "Email atau password salah."
             }
         }
     }
