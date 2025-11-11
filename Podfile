@@ -10,6 +10,7 @@ target 'mypokemon' do
 
   # Reactive programming
   pod 'RxSwift', '~> 6.0'
+  pod 'RxCocoa'
 
   # Loading HUD
   pod 'MBProgressHUD', '~> 1.2'

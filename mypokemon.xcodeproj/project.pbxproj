@@ -15,6 +15,7 @@
 		FA1B2B0D2EBC957C00855BCB /* mypokemonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA1B2B0C2EBC957C00855BCB /* mypokemonTests.swift */; };
 		FA1B2B172EBC957C00855BCB /* mypokemonUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA1B2B162EBC957C00855BCB /* mypokemonUITests.swift */; };
 		FA1B2B192EBC957C00855BCB /* mypokemonUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA1B2B182EBC957C00855BCB /* mypokemonUITestsLaunchTests.swift */; };
+		FA45531F2EC258FB0012A05E /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA45531E2EC258FB0012A05E /* SearchBar.swift */; };
 		FACD2A142EBCC69900A8E323 /* LandingPagerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD2A132EBCC69900A8E323 /* LandingPagerViewController.swift */; };
 		FACD2A182EBDD3CB00A8E323 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD2A152EBDD3CB00A8E323 /* HomeView.swift */; };
 		FACD2A192EBDD3CB00A8E323 /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD2A162EBDD3CB00A8E323 /* LandingView.swift */; };
@@ -54,6 +55,7 @@
 		FA1B2B122EBC957C00855BCB /* mypokemonUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mypokemonUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA1B2B162EBC957C00855BCB /* mypokemonUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mypokemonUITests.swift; sourceTree = "<group>"; };
 		FA1B2B182EBC957C00855BCB /* mypokemonUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mypokemonUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		FA45531E2EC258FB0012A05E /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		FACD2A132EBCC69900A8E323 /* LandingPagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingPagerViewController.swift; sourceTree = "<group>"; };
 		FACD2A152EBDD3CB00A8E323 /* HomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		FACD2A162EBDD3CB00A8E323 /* LandingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 				FACD2A132EBCC69900A8E323 /* LandingPagerViewController.swift */,
 				FACD2A1B2EBDD5C900A8E323 /* PagerTabStripRepresentable.swift */,
 				FACD2A1D2EBDDB0700A8E323 /* HostingPagerItem.swift */,
+				FA45531E2EC258FB0012A05E /* SearchBar.swift */,
 				FA1B2AFF2EBC957B00855BCB /* Assets.xcassets */,
 				FA1B2B012EBC957B00855BCB /* Preview Content */,
 			);
@@ -353,6 +356,7 @@
 				FACD2A1E2EBDDB0800A8E323 /* HostingPagerItem.swift in Sources */,
 				FACD2A182EBDD3CB00A8E323 /* HomeView.swift in Sources */,
 				FA1B2AFC2EBC957800855BCB /* mypokemonApp.swift in Sources */,
+				FA45531F2EC258FB0012A05E /* SearchBar.swift in Sources */,
 				FACD2A1A2EBDD3CB00A8E323 /* ProfileView.swift in Sources */,
 				FACD2A142EBCC69900A8E323 /* LandingPagerViewController.swift in Sources */,
 			);

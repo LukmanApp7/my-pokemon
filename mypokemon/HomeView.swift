@@ -9,6 +9,7 @@ import SwiftUI
 import Alamofire
 import MBProgressHUD
 import RxSwift
+import RxCocoa
 
 // MARK: - Model
 struct Pokemon: Identifiable, Decodable {
@@ -53,13 +54,15 @@ class PokemonRxViewModel: ObservableObject {
     private let disposeBag = DisposeBag()
 
     // Output
-    @Published var pokemons: [Pokemon] = []
+    let pokemons = BehaviorRelay<[Pokemon]>(value: [])
+    let filteredPokemons = BehaviorRelay<[Pokemon]>(value: [])
     @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
-    @Published var refreshUrl: String?
+    let errorMessage = BehaviorRelay<String?>(value: nil)
+    let refreshUrl = BehaviorRelay<String?>(value: nil)
 
     // Trigger
     let refreshTrigger = PublishSubject<Void>()
+    let searchText = BehaviorRelay<String>(value: "")
 
     init() {
         bind()
@@ -69,30 +72,38 @@ class PokemonRxViewModel: ObservableObject {
         refreshTrigger
             .do(onNext: { [weak self] _ in
                 self?.isLoading = true
-                self?.errorMessage = nil
+                self?.errorMessage.accept(nil)
             })
             .flatMapLatest { [weak self] _ -> Observable<PokemonResponse> in
                 guard let self = self else { return .empty() }
                 
                 // jika nextURL ada, pakai itu, kalau tidak pakai default
-                let urlToUse = self.refreshUrl ?? "https://pokeapi.co/api/v2/pokemon?offset=0&limit=10"
+                let urlToUse = self.refreshUrl.value ?? "https://pokeapi.co/api/v2/pokemon?offset=0&limit=10"
                 return PokemonService.shared.fetchPokemons(from: urlToUse)
                     .asObservable()
                     .catch { error in
-                        DispatchQueue.main.async {
-                            self.errorMessage = error.localizedDescription
-                            self.isLoading = false
-                        }
+                        self.errorMessage.accept(error.localizedDescription)
+                        self.isLoading = false
                         return .empty()
                     }
             }
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] response in
                 guard let self = self else { return }
-                self.pokemons = response.results
-                self.refreshUrl = response.next
+                self.pokemons.accept(response.results)
+                self.filteredPokemons.accept(response.results)
+                self.refreshUrl.accept(response.next)
                 self.isLoading = false
             })
+            .disposed(by: disposeBag)
+        
+        // === Filter Search ===
+        Observable.combineLatest(pokemons.asObservable(), searchText.asObservable())
+            .map { pokemons, query in
+                guard !query.isEmpty else { return pokemons }
+                return pokemons.filter { $0.name.lowercased().contains(query.lowercased()) }
+            }
+            .bind(to: self.filteredPokemons)
             .disposed(by: disposeBag)
     }
 
@@ -161,35 +172,44 @@ struct FirstAppearModifier: ViewModifier {
 // MARK: - SwiftUI View
 struct HomeView: View {
     @StateObject private var viewModel = PokemonRxViewModel()
+    @State private var disposeBag = DisposeBag()
+    @State private var filteredList: [Pokemon] = []
 
     var body: some View {
         ZStack {
             NavigationView {
-                if let error = viewModel.errorMessage {
-                    VStack(spacing: 10) {
-                        Text("Failed to load data")
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                        Button("Retry") {
-                            viewModel.refresh()
-                        }
+                VStack {
+                    SearchBar(text: Binding(
+                        get: { viewModel.searchText.value },
+                        set: { viewModel.searchText.accept($0) }
+                    ))
+                        .padding(.horizontal)
                         .padding(.top, 8)
-                    }
-                } else {
-                    List(viewModel.pokemons) { pokemon in
-                        NavigationLink(destination: DetailView(name: pokemon.name)) {
-                            VStack(alignment: .leading, spacing: 4) {
+                        .background(Color(UIColor.systemBackground))
+                    
+                    if let error = viewModel.errorMessage.value {
+                        VStack(spacing: 10) {
+                            Text("Failed to load data")
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                            Button("Retry") {
+                                viewModel.refresh()
+                            }
+                            .padding(.top, 8)
+                        }
+                    } else {
+                        List(filteredList) { pokemon in
+                            NavigationLink(destination: DetailView(name: pokemon.name)) {
                                 Text(pokemon.name.capitalized)
                                     .font(.headline)
+                                    .padding(.vertical, 6)
                             }
-                            .padding(.vertical, 6)
                         }
-                    }
-                    .listStyle(PlainListStyle())
-                    .navigationTitle("Pokémon List")
-                    .refreshable {
-                        viewModel.refresh()
+                        .listStyle(PlainListStyle())
+                        .refreshable {
+                            viewModel.refresh()
+                        }
                     }
                 }
             }
@@ -199,8 +219,19 @@ struct HomeView: View {
                 .allowsHitTesting(false)
         }
         .onFirstAppear {
+            bindViewModel()
             viewModel.refresh()
         }
+    }
+    
+    private func bindViewModel() {
+        // Bind hasil filter ke state SwiftUI
+        viewModel.filteredPokemons
+            .asDriver()
+            .drive(onNext: { list in
+                self.filteredList = list
+            })
+            .disposed(by: disposeBag)
     }
 }
 
