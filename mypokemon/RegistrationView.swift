@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct RegistrationView: View {
+    @StateObject private var vm = AuthViewModel()
     @Environment(\.presentationMode) var presentationMode
     @State private var name = ""
     @State private var phone = ""
@@ -16,13 +17,13 @@ struct RegistrationView: View {
     @State private var confirmPassword = ""
     @State private var showPassword = false
     @State private var showConfirmPassword = false
-    @State private var message = ""
+    @State private var message: String?
     @State private var showAlert = false
-    private let repo = UserRepository()
+//    private let repo = UserRepository()
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Registrasi")
+            Text("Registration")
                 .font(.title)
                 .bold()
             
@@ -87,43 +88,49 @@ struct RegistrationView: View {
             .background(Color(.systemGray6))
             .cornerRadius(10)
             
-            if let msg = message {
+            if let msg = message{
                 Text(msg)
                     .foregroundColor(msg.contains("berhasil") ? .green : .red)
                     .font(.footnote)
             }
             
-            Button("Daftar") {
+            Button(action: {
                 register()
+            }) {
+                Text(showAlert ? "Registering..." : "Register")
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(8)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            
             Spacer()
         }
         .padding()
     }
     
     private func register() {
-        guard !email.isEmpty, !password.isEmpty else {
-            message = "Email dan password wajib diisi."
+        guard !name.isEmpty && !email.isEmpty && !password.isEmpty else {
+            message = "Please fill all fields"
             return
         }
         guard password == confirmPassword else {
-            message = "Password tidak cocok."
+            message = "Passwords do not match"
             return
         }
-        do {
-            try repo.register(email: email, password: password, name: name, phone: phone)
+        showAlert = true
+        vm.register(username: name, email: email, phone: phone, password: password)
+        showAlert = vm.isLoading
+        print("-> error message : ", vm.errorMessage)
+        if vm.errorMessage == nil {
             message = "Registrasi berhasil! Silakan login."
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                presentationMode.wrappedValue.dismiss()
-            }
-        } catch {
-            message = error.localizedDescription
+        } else {
+            message = vm.errorMessage
+        }
+        print("-> message", message)
+        // observe registration result by checking vm.errorMessage or navigate back after small delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            presentationMode.wrappedValue.dismiss()
         }
     }
 }

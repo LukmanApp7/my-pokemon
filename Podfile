@@ -17,5 +17,8 @@ target 'mypokemon' do
 
   # Pager / tab strip
   pod 'XLPagerTabStrip', '~> 8.0'
+  
+  # Database
+  pod 'CouchbaseLite-Swift', '~> 3.2'
 end
 

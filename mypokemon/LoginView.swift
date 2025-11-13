@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct LoginView: View {
+    @StateObject private var vm = AuthViewModel()
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var isLoading = false
@@ -167,19 +168,12 @@ struct LoginView: View {
         
         // Simulate network delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            isLoading = false
-            
-            if repo.login(email: email, password: password) {
-                loginError = nil
+            vm.login(email: email, password: password)
+            loginError = vm.errorMessage
+            if loginError == nil {
                 isLoggedIn = true
-                if let user = SQLiteManager.shared.fetchUser(email: email, password: password) {
-                    UserDefaults.standard.set(user.name, forKey: "currentUsername")
-                    UserDefaults.standard.set(user.email, forKey: "currentEmail")
-                    UserDefaults.standard.set(user.phone, forKey: "currentPhone")
-                }
-            } else {
-                loginError = "Email atau password salah."
             }
+            isLoading = vm.isLoading
         }
     }
 }

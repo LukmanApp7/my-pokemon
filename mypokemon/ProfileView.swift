@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @StateObject private var vm = AuthViewModel()
     @State private var username: String = ""
     @State private var email: String = ""
     @State private var phone: String = ""
@@ -75,9 +76,17 @@ struct ProfileView: View {
     }
 
     private func loadUser() {
-        username = UserDefaults.standard.string(forKey: "currentUsername") ?? "Unknown"
-        email = UserDefaults.standard.string(forKey: "currentEmail") ?? "-"
-        phone = UserDefaults.standard.string(forKey: "currentPhone") ?? "-"
+        print("-> load user : ", vm.currentUser)
+        if let user = vm.currentUser {
+            username = user.username
+            email = user.email
+            phone = user.phone
+        } else {
+            print("get form UserDefaults")
+            username = UserDefaults.standard.string(forKey: "currentUsername") ?? "Unknown"
+            email = UserDefaults.standard.string(forKey: "currentEmail") ?? "-"
+            phone = UserDefaults.standard.string(forKey: "currentPhone") ?? "-"
+        }
     }
 
     private func logout() {
